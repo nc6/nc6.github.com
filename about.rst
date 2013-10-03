@@ -1,17 +1,6 @@
 ---
 title: About
 ---
-Nullam imperdiet sodales orci vitae molestie. Nunc quam orci, pharetra a
-rhoncus vitae, eleifend id felis. Suspendisse potenti. Etiam vitae urna orci.
-Quisque pellentesque dignissim felis, egestas tempus urna luctus vitae. In hac
-habitasse platea dictumst. Morbi fringilla mattis odio, et mattis tellus
-accumsan vitae.
+Hi, I'm Nick. By training I'm a mathematician, particularly interested in geometry and algebra. These days, accordingly, I mostly do probability and statistics. The rest of the time, I prod computers to show patterns of lights. I particularly like to prod computers using languages such as [Haskell](http://www.haskell.org) and [Scala](http://www.scala-lang.org), though when pressed I've been known to code in other languages.
 
-1. Amamus Unicode 碁
-2. Interdum nex magna.
-
-Vivamus eget mauris sit amet nulla laoreet lobortis. Nulla in diam elementum
-risus convallis commodo. Cras vehicula varius dui vitae facilisis. Proin
-elementum libero eget leo aliquet quis euismod orci vestibulum. Duis rhoncus
-lorem consequat tellus vestibulum aliquam. Quisque orci orci, malesuada porta
-blandit et, interdum nec magna.
+At the moment, I'm living and working in Cambridge (aka 'The other place') at the [Wellcome Trust Sanger Institute](http://www.sanger.ac.uk), where I work writing tools and pipelines for Human Genetics. I try not to let my complete lack of knowledge concerning genetics stop me.
