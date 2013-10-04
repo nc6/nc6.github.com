@@ -1,5 +1,6 @@
 _cache
 _site
+_deploy
 site
 site.hi
 site.o

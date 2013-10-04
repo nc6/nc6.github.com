@@ -5,8 +5,17 @@ import           Hakyll
 
 
 --------------------------------------------------------------------------------
+-- Configuration
+--------------------------------------------------------------------------------
+config :: Configuration
+config = defaultConfiguration { deployCommand = "./deploy.sh" }
+--------------------------------------------------------------------------------
 main :: IO ()
-main = hakyll $ do
+main = hakyllWith config $ do
+    match "CNAME" $ do
+        route   idRoute
+        compile copyFileCompiler
+
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -15,7 +24,7 @@ main = hakyll $ do
         route   idRoute
         compile compressCssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
+    match (fromList ["about.markdown", "contact.markdown"]) $ do
         route   $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
