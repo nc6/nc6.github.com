@@ -7,6 +7,7 @@ rm -rf _deploy/*
 cp -R _site/* _deploy/
 
 cd _deploy 
+git add .
 git commit -am "Updated site on $DATE.
 Source commit id: $COMMIT_SHA"
 git push origin
