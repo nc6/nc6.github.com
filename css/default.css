@@ -1,13 +1,14 @@
 body {
-    color: black;
-    font-size: 16px;
-    margin: 0px 20px 0px 20px;
+    color: #black;
+    font-size: 15px;
+    font-family: georgia, sans;
+    margin: 0px auto 0px auto;
 }
 
 div#header {
-    border-bottom: 2px solid black;
     margin-bottom: 30px;
-    padding: 12px 0px 12px 0px;
+    padding: 12px 20px 12px 20px;
+    background-color: #999999;
 }
 
 div#logo a {
@@ -25,18 +26,21 @@ div#header #navigation {
 div#header #navigation a {
     color: black;
     font-size: 18px;
-    font-weight: bold;
     margin-left: 12px;
     text-decoration: none;
-    /*text-transform: uppercase;*/
+    text-transform: uppercase;
+}
+
+div#content {
+    margin: 0px 25px 0px 25px;
 }
 
 div#footer {
-    border-top: solid 2px black;
+    border-top: solid 1px grey;
     color: #555;
     font-size: 12px;
     margin-top: 30px;
-    padding: 12px 0px 12px 0px;
+    padding: 12px 20px 12px 20px;
     text-align: right;
 }
 
