@@ -67,3 +67,5 @@ Finally, we generate some random test results and print them to file.
             results = [(unGen genResult r n) | (r,n) <- rnds rand `zip` [0..count]]
         mapM (hPutStrLn handle . show) results
         return ()
+
+For anyone who's interested, the code is available [as a gist](https://gist.github.com/nc6/6509393).
