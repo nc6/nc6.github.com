@@ -34,10 +34,16 @@ With this in hand, it's very easy to write quick tests of invariants:
 
 This test was confirming that using the product of the sizes of the two groups was a suitable threshold to decide when to approximate. The usual literature suggests that the normal approximation is 'good' for sample sizes bigger than 8, but mostly considers sample sizes which are roughly equal. We expect very unequal sample sizes, and so may frequently have situations where one group is of size 2 and another may be in the thousands, making calculation of the exact U statistic unfeasible. Using a region bound (which seems just as good an indicator of test performance) makes these situations much easier to handle.
 
-After mentioning that I was testing on random data, my collaborator asked me to produce some charts showing the performance of the approximation with the product of the group sizes, as well as exploring the relative performance of using the standard normal approximation, and an approximation which corrects for the presence of tied ranks in the input data. Luckily, it's quite easy to use the arbitrary instances directly to generate data for export or graphing:
+After mentioning that I was testing on random data, my collaborator asked me to produce some charts showing the performance of the approximation with the product of the group sizes, as well as exploring the relative performance of using the standard normal approximation, and an approximation which corrects for the presence of tied ranks in the input data. Luckily, it's quite easy to use the arbitrary instances directly to generate data for export or graphing.
 
-    -- | TestResult n1 n2 exact normal
+We define the type of test result:
+
+    -- | TestResult n1 n2 exact normal uncorrected
     data TestResult = TestResult Int Int Double Double Double deriving Show
+
+A test result contains the size of the two groups, as well as scores for the exact U-distribution, the normal approximation, and the normal approximation without correction for ties.
+
+We could define an Arbitrary instance for `TestResult`, but in this case we want to make the call a little more explicit, so we simply expose the generator of `TestResults` directly:
 
     genResult :: Gen TestResult
     genResult = let 
@@ -50,9 +56,11 @@ After mentioning that I was testing on random data, my collaborator asked me to 
             normalUnc = normalUncorrectedP u
         return $ TestResult n m exact normal normalUnc
 
+Finally, we generate some random test results and print them to file.
+
     -- Generate some data for graphing and write to a file.
-    graphData :: Int -> String -> IO ()
-    graphData count fileName = withFile fileName WriteMode go where
+    writeTestData :: Int -> String -> IO ()
+    writeTestData count fileName = withFile fileName WriteMode go where
       go handle = do
         rand <- newStdGen
         let rnds rnd = rnd1 : rnds rnd2 where (rnd1, rnd2) = split rnd
