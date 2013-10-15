@@ -73,6 +73,7 @@ writeTestData count fileName = withFile fileName WriteMode go where
         results = [(unGen genResult r n) | (r,n) &lt;- rnds rand `zip` [0..count]]
     mapM (hPutStrLn handle . show) results
     return ()</code></pre>
+<p>For anyone who’s interested, the code is available <a href="https://gist.github.com/nc6/6509393">as a gist</a>.</p>
 
 <div id="disqus">
     <div id="disqus_thread"></div>
