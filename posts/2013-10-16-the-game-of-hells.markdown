@@ -65,7 +65,7 @@ answer :: Game -> Guess -> Response
 answer (Game (Guess a)) (Guess b) = score a b
 ````
 
-A solution is effectively same as a guess, and a game consists of a picked solution. To set a game, we generate an list of random numbers between 0 and 9 using `randomRs`. We then remove duplicates from this list and take the first 4. Since Haskell is lazy by default, it will only generate enough elements necessary to provide our four non-dupicates. Answering a guess is simply a case of scoring the guess against the solution.
+A solution is effectively same as a guess, and a game consists of a picked solution. To set a game, we generate an list of random numbers between 0 and 9 using `randomRs`. We then remove duplicates from this list and take the first 4. Since Haskell is lazy by default, it will only generate enough elements necessary to provide our four non-duplicates. Answering a guess is simply a case of scoring the guess against the solution.
 
 The guesser
 ===========
