@@ -42,7 +42,7 @@ We should consider how to score a guess. The number of bulls is the number of pl
 score :: [Int] -> [Int] -> Response
 score a b = case (bulls, cows) of
     (4, 0) -> Victory
-    (b, c) -> TryAgain bulls cows
+    _ -> TryAgain bulls cows
   where
     cows = (length $ intersect a b) - bulls
     bulls = length . filter (\(x,y) -> x == y) $ zip a b
@@ -51,9 +51,9 @@ score a b = case (bulls, cows) of
 We can now define something to set problems.
 
 ````haskell
-type Solution = Guess
--- | Game place
-data Game = Game Solution deriving Show
+
+-- | Game solution
+data Game = Game Guess deriving Show
 
 -- | Set a new game
 set :: IO Game
@@ -65,7 +65,7 @@ answer :: Game -> Guess -> Response
 answer (Game (Guess a)) (Guess b) = score a b
 ````
 
-A solution is effectively same as a guess, and a game consists of a picked solution. To set a game, we generate an list of random numbers between 0 and 9 using `randomRs`. We then remove duplicates from this list and take the first 4. Since Haskell is lazy by default, it will only generate enough elements necessary to provide our four non-duplicates. Answering a guess is simply a case of scoring the guess against the solution.
+A solution is effectively same as a guess, and a game consists of a picked guess. To set a game, we generate an list of random numbers between 0 and 9 using `randomRs`. We then remove duplicates from this list and take the first 4. Since Haskell is lazy by default, it will only generate enough elements necessary to provide our four non-duplicates. Answering a guess is simply a case of scoring the guess against the solution.
 
 The guesser
 ===========
@@ -94,28 +94,28 @@ What do we require of that state? Well, we need a way to initialise it before th
 
 ```haskell
 class GameState a where 
-  hzero :: a
-  hupdate :: Move -> a -> a
+  szero :: a
+  supdate :: Move -> a -> a
 ```
 
 Finally, we implement a `play` method - this takes a guesser, a game, and a maximum number of tries, and returns a `Result` after repeatedly invoking the guesser on successive states. The definition is pretty simple:
 
 ```haskell
-  play :: GameState a => Guesser a -> Game -> Int -> Result
-  play guesser game maxTries = move [] hzero where
-    move history state 
-      | length history > maxTries = GiveUp maxTries
-      | otherwise = let 
-            guess = guesser state 
-            response = answer game guess
-            nextmove = Move guess response
-            newhistory = nextmove : history
-          in case response of
-            Victory -> Win newhistory
-            _ -> move newhistory (hupdate nextmove state)
+play :: GameState a => Guesser a -> Game -> Int -> Result
+play guesser game maxTries = go [] szero where
+  go history state 
+    | length history > maxTries = GiveUp maxTries
+    | otherwise = let 
+          guess = guesser state 
+          response = answer game guess
+          nextmove = Move guess response
+          newhistory = nextmove : history
+        in case response of
+          Victory -> Win newhistory
+          _ -> go newhistory (supdate nextmove state)
 ```
 
-We start off by initialising history to `[]` (we keep the history so we can show it at the end) and `state` to `hzero`. We then check that we have guesses remaining (or otherwise give up), ask the guesser for the next guess, ask the setter to check that guess, add the move onto the history and then check the response. If it's a victory, we return a result. Otherwise, we update the state and recurse. Not that we need to care given how many moves we're making, but since the recursive call is in tail position the compiler can optimise it away and convert this into a single loop.
+We start off by initialising history to `[]` (we keep the history so we can show it at the end) and `state` to `szero`. We then check that we have guesses remaining (or otherwise give up), ask the guesser for the next guess, ask the setter to check that guess, add the move onto the history and then check the response. If it's a victory, we return a result. Otherwise, we update the state and recurse. Not that we need to care given how many moves we're making, but since the recursive call is in tail position the compiler can optimise it away and convert this into a single loop.
 
 The Strategy
 ============
@@ -126,11 +126,11 @@ I spent quite a while trying to think of a sensible strategy for this. I initial
 newtype State = State { unState :: [[Int]] }
 
 instance GameState State where
-  hzero = State [[a,b,c,d] | a <- [0 .. 9]
+  szero = State [[a,b,c,d] | a <- [0 .. 9]
                      , b <- [0 .. 9] \\ [a]
                      , c <- [0 .. 9] \\ [a,b]
                      , d <- [0 .. 9] \\ [a,b,c]]
-  hupdate (Move (Guess a) r) = State . filter (\b -> score a b == r) . unState
+  supdate (Move (Guess g) r) = State . filter (\g2 -> score g g2 == r) . unState
 
 guess :: Guesser State
 guess = Guess . head . unState
