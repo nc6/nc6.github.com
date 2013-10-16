@@ -52,14 +52,14 @@
 <pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">score ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Response</span>
 score a b <span class="fu">=</span> <span class="kw">case</span> (bulls, cows) <span class="kw">of</span>
     (<span class="dv">4</span>, <span class="dv">0</span>) <span class="ot">-&gt;</span> <span class="dt">Victory</span>
-    (b, c) <span class="ot">-&gt;</span> <span class="dt">TryAgain</span> bulls cows
+    _ <span class="ot">-&gt;</span> <span class="dt">TryAgain</span> bulls cows
   <span class="kw">where</span>
     cows <span class="fu">=</span> (length <span class="fu">$</span> intersect a b) <span class="fu">-</span> bulls
     bulls <span class="fu">=</span> length <span class="fu">.</span> filter (\(x,y) <span class="ot">-&gt;</span> x <span class="fu">==</span> y) <span class="fu">$</span> zip a b</code></pre>
 <p>We can now define something to set problems.</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Solution</span> <span class="fu">=</span> <span class="dt">Guess</span>
-<span class="co">-- | Game place</span>
-<span class="kw">data</span> <span class="dt">Game</span> <span class="fu">=</span> <span class="dt">Game</span> <span class="dt">Solution</span> <span class="kw">deriving</span> <span class="dt">Show</span>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">
+<span class="co">-- | Game solution</span>
+<span class="kw">data</span> <span class="dt">Game</span> <span class="fu">=</span> <span class="dt">Game</span> <span class="dt">Guess</span> <span class="kw">deriving</span> <span class="dt">Show</span>
 
 <span class="co">-- | Set a new game</span>
 <span class="ot">set ::</span> <span class="dt">IO</span> <span class="dt">Game</span>
@@ -69,7 +69,7 @@ set <span class="fu">=</span> newStdGen <span class="fu">&gt;&gt;=</span> \rand 
 <span class="co">-- | Answer a guess.</span>
 <span class="ot">answer ::</span> <span class="dt">Game</span> <span class="ot">-&gt;</span> <span class="dt">Guess</span> <span class="ot">-&gt;</span> <span class="dt">Response</span>
 answer (<span class="dt">Game</span> (<span class="dt">Guess</span> a)) (<span class="dt">Guess</span> b) <span class="fu">=</span> score a b</code></pre>
-<p>A solution is effectively same as a guess, and a game consists of a picked solution. To set a game, we generate an list of random numbers between 0 and 9 using <code>randomRs</code>. We then remove duplicates from this list and take the first 4. Since Haskell is lazy by default, it will only generate enough elements necessary to provide our four non-duplicates. Answering a guess is simply a case of scoring the guess against the solution.</p>
+<p>A solution is effectively same as a guess, and a game consists of a picked guess. To set a game, we generate an list of random numbers between 0 and 9 using <code>randomRs</code>. We then remove duplicates from this list and take the first 4. Since Haskell is lazy by default, it will only generate enough elements necessary to provide our four non-duplicates. Answering a guess is simply a case of scoring the guess against the solution.</p>
 <h1 id="the-guesser">The guesser</h1>
 <p>Since the objective of the kata is to write a program that guesses in as few moves as possible, it would be good if our program allowed us to test multiple strategies. To do this, we want to abstract out what a guesser needs to do. A guesser wants to make a number of moves. At each move, it needs to take all of its information from previous moves and use that to output a new <code>Guess</code>.</p>
 <p>First we define a move, a game history and a result - a move is just a combination of guesses and responses, and a history is a sequence of moves. We want the history so we can display the series of moves made to the user. The result simply gives us the state at the end of the game, where we either win with a move history, or we give up having exceeded some number of moves without guessing correctly.</p>
@@ -84,32 +84,32 @@ answer (<span class="dt">Game</span> (<span class="dt">Guess</span> a)) (<span c
 <span class="kw">type</span> <span class="dt">Guesser</span> a <span class="fu">=</span> a <span class="ot">-&gt;</span> <span class="dt">Guess</span></code></pre>
 <p>What do we require of that state? Well, we need a way to initialise it before the first guess is made. We also need a way to update it in light of a new move. So that leads us to the following definition:</p>
 <pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">GameState</span> a <span class="kw">where</span> 
-<span class="ot">  hzero ::</span> a
-<span class="ot">  hupdate ::</span> <span class="dt">Move</span> <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a</code></pre>
+<span class="ot">  szero ::</span> a
+<span class="ot">  supdate ::</span> <span class="dt">Move</span> <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a</code></pre>
 <p>Finally, we implement a <code>play</code> method - this takes a guesser, a game, and a maximum number of tries, and returns a <code>Result</code> after repeatedly invoking the guesser on successive states. The definition is pretty simple:</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">  play ::</span> <span class="dt">GameState</span> a <span class="ot">=&gt;</span> <span class="dt">Guesser</span> a <span class="ot">-&gt;</span> <span class="dt">Game</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Result</span>
-  play guesser game maxTries <span class="fu">=</span> move [] hzero <span class="kw">where</span>
-    move history state 
-      <span class="fu">|</span> length history <span class="fu">&gt;</span> maxTries <span class="fu">=</span> <span class="dt">GiveUp</span> maxTries
-      <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="kw">let</span> 
-            guess <span class="fu">=</span> guesser state 
-            response <span class="fu">=</span> answer game guess
-            nextmove <span class="fu">=</span> <span class="dt">Move</span> guess response
-            newhistory <span class="fu">=</span> nextmove <span class="fu">:</span> history
-          <span class="kw">in</span> <span class="kw">case</span> response <span class="kw">of</span>
-            <span class="dt">Victory</span> <span class="ot">-&gt;</span> <span class="dt">Win</span> newhistory
-            _ <span class="ot">-&gt;</span> move newhistory (hupdate nextmove state)</code></pre>
-<p>We start off by initialising history to <code>[]</code> (we keep the history so we can show it at the end) and <code>state</code> to <code>hzero</code>. We then check that we have guesses remaining (or otherwise give up), ask the guesser for the next guess, ask the setter to check that guess, add the move onto the history and then check the response. If it’s a victory, we return a result. Otherwise, we update the state and recurse. Not that we need to care given how many moves we’re making, but since the recursive call is in tail position the compiler can optimise it away and convert this into a single loop.</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">play ::</span> <span class="dt">GameState</span> a <span class="ot">=&gt;</span> <span class="dt">Guesser</span> a <span class="ot">-&gt;</span> <span class="dt">Game</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Result</span>
+play guesser game maxTries <span class="fu">=</span> go [] szero <span class="kw">where</span>
+  go history state 
+    <span class="fu">|</span> length history <span class="fu">&gt;</span> maxTries <span class="fu">=</span> <span class="dt">GiveUp</span> maxTries
+    <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="kw">let</span> 
+          guess <span class="fu">=</span> guesser state 
+          response <span class="fu">=</span> answer game guess
+          nextmove <span class="fu">=</span> <span class="dt">Move</span> guess response
+          newhistory <span class="fu">=</span> nextmove <span class="fu">:</span> history
+        <span class="kw">in</span> <span class="kw">case</span> response <span class="kw">of</span>
+          <span class="dt">Victory</span> <span class="ot">-&gt;</span> <span class="dt">Win</span> newhistory
+          _ <span class="ot">-&gt;</span> go newhistory (supdate nextmove state)</code></pre>
+<p>We start off by initialising history to <code>[]</code> (we keep the history so we can show it at the end) and <code>state</code> to <code>szero</code>. We then check that we have guesses remaining (or otherwise give up), ask the guesser for the next guess, ask the setter to check that guess, add the move onto the history and then check the response. If it’s a victory, we return a result. Otherwise, we update the state and recurse. Not that we need to care given how many moves we’re making, but since the recursive call is in tail position the compiler can optimise it away and convert this into a single loop.</p>
 <h1 id="the-strategy">The Strategy</h1>
 <p>I spent quite a while trying to think of a sensible strategy for this. I initially wanted to do something probabilistic, but after a page of scribbles decided that the posterior distributions were somewhat more hairy than I wanted to contend with. Then I thought about some heuristic approximation scoring each number. Finally, I gave up. My girlfriend was tackling the problem by starting with every possibility and then on each turn removing those which had been invalidated by the previous move and guessing the remaining one which was in some way ‘most informative’. I decided to go even simpler than this. The simple strategy updates state by removing everything which would have scored the guess differently to the answer. It then picks the first one. I was actually slightly surprised by just <em>how</em> simple this is to write:</p>
 <pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">State</span> <span class="fu">=</span> <span class="dt">State</span> {<span class="ot"> unState ::</span> [[<span class="dt">Int</span>]] }
 
 <span class="kw">instance</span> <span class="dt">GameState</span> <span class="dt">State</span> <span class="kw">where</span>
-  hzero <span class="fu">=</span> <span class="dt">State</span> [[a,b,c,d] <span class="fu">|</span> a <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> <span class="dv">9</span>]
+  szero <span class="fu">=</span> <span class="dt">State</span> [[a,b,c,d] <span class="fu">|</span> a <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> <span class="dv">9</span>]
                      , b <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> <span class="dv">9</span>] \\ [a]
                      , c <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> <span class="dv">9</span>] \\ [a,b]
                      , d <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> <span class="dv">9</span>] \\ [a,b,c]]
-  hupdate (<span class="dt">Move</span> (<span class="dt">Guess</span> a) r) <span class="fu">=</span> <span class="dt">State</span> <span class="fu">.</span> filter (\b <span class="ot">-&gt;</span> score a b <span class="fu">==</span> r) <span class="fu">.</span> unState
+  supdate (<span class="dt">Move</span> (<span class="dt">Guess</span> g) r) <span class="fu">=</span> <span class="dt">State</span> <span class="fu">.</span> filter (\g2 <span class="ot">-&gt;</span> score g g2 <span class="fu">==</span> r) <span class="fu">.</span> unState
 
 <span class="ot">guess ::</span> <span class="dt">Guesser</span> <span class="dt">State</span>
 guess <span class="fu">=</span> <span class="dt">Guess</span> <span class="fu">.</span> head <span class="fu">.</span> unState</code></pre>
