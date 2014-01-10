@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>topos.org.uk - The Game of Hells part 2</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../">topos.org.uk</a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../archive.html">Archive</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>The Game of Hells part 2</h1>
+
+            <div class="info">
+    Posted on October 18, 2013
+    
+        by Nick
+    
+</div>
+
+<p>I’ve been thinking some more about the game of Hells introduced in <a href="2013-10-16-the-game-of-hells.html">the last post</a>, and how to do better than the simple strategy we introduced there.</p>
+<!-- more -->
+
+<p>So, whilst I initially thought it inelegant, the approach of paring down the possibilities seems like a good one. However, simply picking the first remaining possibility is unlikely to be the best approach. What we’d like is a way of choosing the next guess to give us the best hope of cutting down the remaining possibilities. Before we get to this, however, let’s introduce some terminology.</p>
+<p>Let <span class="math"><em>H</em></span> be the current history of a game (recall that the history is the series of moves leading up to that point). Define <span class="math">Ω <sub><em>H</em></sub></span> to be the set of all possible moves remaining given a history <span class="math"><em>H</em></span>. Now for any move <span class="math"><em>m</em> ∈ Ω <sub><em>H</em></sub></span>, we have a set of possible responses <span class="math"><em>I</em></span> (from 0 cows, 0 bulls up to 4 bulls), and each response <span class="math"><em>i</em></span> gives rise to a set <span class="math"><em>R</em><sub><em>g</em>, <em>i</em></sub> ⊆ Ω <sub><em>H</em></sub></span> of those elements that score <span class="math"><em>i</em></span> against <span class="math"><em>g</em></span>. In other words, <span class="math"><em>R</em><sub><em>g</em>, <em>i</em></sub></span> represents the possibilities that would remain should we get response <span class="math"><em>i</em></span> to guess <span class="math"><em>g</em></span>.</p>
+<p>We call the set <span class="math"><em>R</em><sub><em>g</em></sub> = {<em>R</em><sub><em>g</em>, <em>i</em></sub> :  <em>i</em> ∈ <em>I</em>}</span> the <em>residuals</em> of <span class="math"><em>g</em></span>. Let <span class="math"><em>n</em><sub><em>g</em>, <em>i</em></sub> = |<em>R</em><sub><em>g</em>, <em>i</em></sub>|</span> be the size of <span class="math"><em>i</em></span>-th residual. Then we may define the following three strategies:</p>
+<ol style="list-style-type: decimal">
+<li>The optimistic strategy. Choose <span class="math"><em>g</em> = argmin<sub><em>g</em></sub>{min<sub><em>i</em></sub> {<em>n</em><sub><em>g</em>, <em>i</em></sub>}}</span>.</li>
+<li>The pessimistic stragegy. Choose <span class="math"><em>g</em> = argmin<sub><em>g</em></sub>{max<sub><em>i</em></sub> {<em>n</em><sub><em>g</em>, <em>i</em></sub>}}</span>.</li>
+<li>The cynical strategy. Choose <span class="math"><em>g</em> = argmin<sub><em>g</em></sub>{(∑ <sub><em>i</em></sub><em>n</em><sub><em>g</em>, <em>i</em></sub>) / |<em>I</em>|}</span>.</li>
+</ol>
+<p>The optimistic strategy wants to believe that every move it makes is going to respond with the best answer (obviously, we exclude the 4 bulls case!) possible, the one that gives it the most information, and so it heavily gambles on these outcomes. I suspect it will do quite badly, at least in early turns.</p>
+<p>The pessimistic strategy thinks that every guess it makes will be terrible, and tries to minimise the damage. The cynical strategy tries to game the system.</p>
+<p>It seems a big heavyweight to calculate residual class sizes for every possible move, however. What we’d like is a way to reduce the number of candidates we consider. One way to do this would be to prove beforehand that the residual class sizes for two possibilities were going to be identical. Let <span class="math"> ∼ </span> be defined as follows: for <span class="math"><em>a</em>, <em>b</em> ∈ Ω <sub><em>H</em></sub></span>, we say that <span class="math"><em>a</em> ∼ <em>b</em></span> iff <span class="math">∀ <em>i</em> (<em>n</em><sub><em>a</em>, <em>i</em></sub> = <em>n</em><sub><em>b</em>, <em>i</em></sub>)</span>. It should be straightforward that <span class="math"> ∼ </span> is an equivalence relation on <span class="math">Ω <sub><em>H</em></sub></span>, and that we need only check one member of each equivalence class in order to determine a suitable candidate guess <span class="math"><em>g</em></span>.</p>
+<p>Now, also for <span class="math"><em>a</em>, <em>b</em> ∈ Ω <sub><em>H</em></sub></span> we say that <span class="math"><em>a</em></span> and <span class="math"><em>b</em></span> are <em>indistinguishable under <span class="math"><em>H</em></span></em> if, given the transposition <span class="math"><em>π</em><sub><em>a</em>, <em>b</em></sub></span> which swaps <span class="math"><em>a</em></span> and <span class="math"><em>b</em></span>, there is some permutation of moves <span class="math"><em>σ</em></span> such that <span class="math"><em>π</em><sub><em>a</em>, <em>b</em></sub>(<em>H</em>) = <em>σ</em>(<em>H</em>)</span>. In other words, <span class="math"><em>a</em></span> and <span class="math"><em>b</em></span> are indistinguishable if swapping them in every move results in a mere reordering of the history.</p>
+<p>Consider the following sequence of moves (clearly non-optimal):</p>
+<ol style="list-style-type: decimal">
+<li>[0,1,2,3] - 0 cows, 1 bull</li>
+<li>[0,4,5,6] - 2 cows, 1 bull</li>
+<li>[0,5,4,6] - 2 cows, 1 bull</li>
+</ol>
+<p>Then 7 and 8 are clearly indistinguishable since they do not occur in the history. Likewise,</p>
+
+<div id="disqus">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'categoricalimpredicative'; // Required - Replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+        <div id="footer">
+            <div style="float:left;">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+            <div>
+                All work on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
+            </div>
+        </div>
+    </body>
+</html>
